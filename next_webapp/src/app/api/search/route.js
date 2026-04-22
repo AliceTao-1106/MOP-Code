@@ -10,14 +10,26 @@ export async function GET(request) {
     const category = searchParams.get('category') ?? null;
     const tag = searchParams.get('tag') ?? null;
 
+    let categoryId = null;
+    if (category !== null) {
+      categoryId = parseInt(category, 10);
+      if (isNaN(categoryId)) {
+        return errorResponse('category must be a valid integer', 400, 'INVALID_CATEGORY');
+      }
+    }
+
     let results;
 
     if (q) {
+      let titleQuery = supabase.from('usecases').select('*').ilike('title', `%${q}%`);
+      let descQuery = supabase.from('usecases').select('*').ilike('description', `%${q}%`);
+      if (categoryId !== null) {
+        titleQuery = titleQuery.eq('category_id', categoryId);
+        descQuery = descQuery.eq('category_id', categoryId);
+      }
+
       const [{ data: byTitle, error: titleError }, { data: byDesc, error: descError }] =
-        await Promise.all([
-          supabase.from('usecases').select('*').ilike('title', `%${q}%`),
-          supabase.from('usecases').select('*').ilike('description', `%${q}%`),
-        ]);
+        await Promise.all([titleQuery, descQuery]);
 
       if (titleError) throw titleError;
       if (descError) throw descError;
@@ -29,14 +41,17 @@ export async function GET(request) {
         return true;
       });
 
-      // TODO: category filter
       // TODO: tag filter
     } else if (title) {
-      const { data, error } = await supabase.from('usecases').select('*').ilike('title', `%${title}%`);
+      let query = supabase.from('usecases').select('*').ilike('title', `%${title}%`);
+      if (categoryId !== null) query = query.eq('category_id', categoryId);
+      const { data, error } = await query;
       if (error) throw error;
       results = data ?? [];
     } else {
-      const { data, error } = await supabase.from('usecases').select('*');
+      let query = supabase.from('usecases').select('*');
+      if (categoryId !== null) query = query.eq('category_id', categoryId);
+      const { data, error } = await query;
       if (error) throw error;
       results = data ?? [];
     }
