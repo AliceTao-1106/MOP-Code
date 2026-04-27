@@ -216,6 +216,7 @@ export async function GET(request) {
       );
     }
 
+    const total = count ?? 0;
     return NextResponse.json({
       success: true,
       data: data || [],
