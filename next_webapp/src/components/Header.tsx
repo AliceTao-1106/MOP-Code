@@ -30,25 +30,19 @@ const Header = () => {
 	const i18nRouter = useI18nRouter();
 
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-	const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
-	const [isLangOpen, setIsLangOpen] = useState(false);
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
+const [isLangOpen, setIsLangOpen] = useState(false);
+const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-	const { theme, toggleTheme } = useTheme();
-	
-    useEffect(() => {
-	  const token = localStorage.getItem("token");
-	  const user = localStorage.getItem("user");
+const { theme, toggleTheme } = useTheme();
+
+useEffect(() => {
+	const token = localStorage.getItem("token");
+	const user = localStorage.getItem("user");
 
 	setIsLoggedIn(!!token && !!user);
-    }, []);
-
-	useEffect(() => {
-		const token = localStorage.getItem("token");
-		setIsLoggedIn(!!token);
-	}, []);
+}, []);
 
 	const handleLogout = () => {
 		localStorage.removeItem("token");
