@@ -114,22 +114,36 @@ export async function GET(request) {
     const search = url.searchParams.get('search')?.trim() || '';
     const keyword = q || search;
 
+    // 'title' | 'description' | 'all' (default)
+    const searchBy = url.searchParams.get('search_by')?.trim() || 'all';
+
     const categoryId = url.searchParams.get('category_id');
     const tagId = url.searchParams.get('tag_id');
     const tagIds = url.searchParams.get('tag_ids');
     const tagSlug = url.searchParams.get('tag')?.trim();
+    // tag_name: search tags by name (ilike), used by the usecases explore page
+    const tagName = url.searchParams.get('tag_name')?.trim();
 
     const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
     const pageSize = Math.max(1, parseInt(url.searchParams.get('pageSize') ?? '10', 10) || 10);
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    let query = supabase.from('usecases').select('*', { count: 'exact' });
+    // Include tags via junction table in a single query
+    let query = supabase
+      .from('usecases')
+      .select('id, title, description, cover_img, category_id, created_at, usecase_tags(tags(id, name, slug))', { count: 'exact' })
+      .order('created_at', { ascending: false });
 
+    // Keyword search — narrows to title, description, or both based on search_by
     if (keyword) {
-      query = query.or(
-        `title.ilike.%${keyword}%,description.ilike.%${keyword}%`
-      );
+      if (searchBy === 'title') {
+        query = query.ilike('title', `%${keyword}%`);
+      } else if (searchBy === 'description') {
+        query = query.ilike('description', `%${keyword}%`);
+      } else {
+        query = query.or(`title.ilike.%${keyword}%,description.ilike.%${keyword}%`);
+      }
     }
 
     if (categoryId) {
@@ -186,6 +200,30 @@ export async function GET(request) {
       tagFilterIds.push(tagData.id);
     }
 
+    // tag_name: look up all tags whose name matches (partial, case-insensitive)
+    if (tagName) {
+      const { data: matchingTags, error: tagNameError } = await supabase
+        .from('tags')
+        .select('id')
+        .ilike('name', `%${tagName}%`);
+
+      if (tagNameError) {
+        console.error('[GET /api/usecases] tag_name lookup error:', tagNameError);
+        return errorResponse('Failed to search tags', 500, 'TAG_SEARCH_ERROR');
+      }
+
+      if (!matchingTags || matchingTags.length === 0) {
+        return NextResponse.json({
+          success: true,
+          data: [],
+          count: 0,
+          pagination: { page, pageSize, total: 0, totalPages: 0 },
+        });
+      }
+
+      tagFilterIds.push(...matchingTags.map((t) => t.id));
+    }
+
     const uniqueTagFilterIds = [...new Set(tagFilterIds)];
 
     if (uniqueTagFilterIds.length > 0) {
@@ -227,10 +265,18 @@ export async function GET(request) {
 
     const total = count ?? 0;
 
+    // Flatten usecase_tags → tags for each use case
+    const usecases = (data || []).map(({ usecase_tags, ...rest }) => ({
+      ...rest,
+      tags: (usecase_tags || [])
+        .map((row) => row.tags)
+        .filter(Boolean),
+    }));
+
     return NextResponse.json({
       success: true,
-      data: data || [],
-      count: (data || []).length,
+      data: usecases,
+      count: usecases.length,
       pagination: {
         page,
         pageSize,
