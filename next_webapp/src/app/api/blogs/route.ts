@@ -228,7 +228,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("blogs")
       .select(
-        "id, created_at, updated_at, title, description, published_date, cover_img, created_by",
+        "id, created_at, updated_at, title, description, published_date, content, cover_img, created_by",
         { count: "exact" }
       )
       .order("created_at", { ascending: false });
@@ -251,7 +251,7 @@ export async function GET(request: NextRequest) {
     // Author filter
     if (createdBy) query = query.eq("created_by", createdBy);
 
-    const { data: blogs, error, count } = await query.range(from, to);
+    const { data: rows, error, count } = await query.range(from, to);
 
     if (error) {
       console.error("[GET /api/blogs] error:", error);
@@ -259,10 +259,35 @@ export async function GET(request: NextRequest) {
     }
 
     const total = count ?? 0;
+    const blogRows = rows ?? [];
+
+    // Step 2: look up first_name + last_name for all unique created_by user IDs
+    let nameByUserId: Record<number, string> = {};
+
+    if (blogRows.length > 0) {
+      const userIds = [...new Set(blogRows.map((b) => b.created_by).filter(Boolean))];
+
+      const { data: details } = await supabase
+        .from("user_details")
+        .select("user_id, first_name, last_name")
+        .in("user_id", userIds);
+
+      if (details) {
+        for (const d of details) {
+          const name = [d.first_name, d.last_name].filter(Boolean).join(" ").trim();
+          nameByUserId[d.user_id] = name || "Admin";
+        }
+      }
+    }
+
+    const data = blogRows.map((b) => ({
+      ...b,
+      created_by_name: nameByUserId[b.created_by] ?? "Admin",
+    }));
 
     return NextResponse.json({
       success: true,
-      data: blogs ?? [],
+      data,
       pagination: {
         page,
         pageSize,

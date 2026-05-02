@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Save, X } from "lucide-react";
 
-export default function BlogForm({ initialData, onSubmit }: any) {
+export default function BlogForm({ initialData, onSubmit, submitting = false }: any) {
   const [form, setForm] = useState(
     initialData || {
       title: "",
@@ -14,8 +14,9 @@ export default function BlogForm({ initialData, onSubmit }: any) {
     }
   );
 
+  // initialData.coverImage may be a URL string (edit mode) or empty
   const [coverPreview, setCoverPreview] = useState<string>(
-    initialData?.coverImage || ""
+    typeof initialData?.coverImage === "string" ? initialData.coverImage : ""
   );
 
   const [errors, setErrors] = useState<any>({});
@@ -210,10 +211,11 @@ export default function BlogForm({ initialData, onSubmit }: any) {
       {/* Submit */}
       <button
         type="submit"
-        className="flex items-center gap-2 rounded-full bg-[#2DBE6C] px-6 py-3 text-white hover:bg-[#1F8F50]"
+        disabled={submitting}
+        className="flex items-center gap-2 rounded-full bg-[#2DBE6C] px-6 py-3 text-white hover:bg-[#1F8F50] disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Save size={18} />
-        Save Blog
+        {submitting ? "Saving..." : "Save Blog"}
       </button>
     </form>
   );
