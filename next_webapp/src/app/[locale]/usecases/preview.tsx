@@ -11,9 +11,18 @@ interface CardProps {
   study: CaseStudy;
 }
 
-const UseCaseCard: React.FC<CardProps> = ({ study }) => {
-  const params = useParams();
-  const locale = params.locale as string;
+
+const Card: React.FC<CardProps> = ({ study, onClick }) => (
+  <div
+    onClick={onClick}
+    className={`${CARD_W} ${CARD_H} overflow-hidden bg-white dark:bg-dark border border-gray-200 dark:border-gray-600 shadow hover:shadow-lg transition-shadow flex flex-col justify-between p-4 cursor-pointer`}
+  >
+    {/* Icon */}
+    <div className="flex justify-center mb-2">
+      <FileText size={48} className="text-primary" />
+      <FileText size={48} className="-ml-6 text-teal-400" />
+      <FileText size={48} className="-ml-6 rotate-6 text-green-700" />
+    </div>
 
   return (
     <Link
