@@ -1143,7 +1143,7 @@ const Dashboard = () => {
 							<p>{t("intro")}</p>
 						</div>
 					</section>
-{/* Explore by category  */}
+
 
 					<section className="case-studies-wrapper">
 						<section className="recent-case-studies">
