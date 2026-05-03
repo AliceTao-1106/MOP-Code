@@ -91,18 +91,26 @@ export default function BlogListingPage() {
           </div>
 
           {/* Responsive card grid: 1 → 2 → 3 columns */}
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <BlogCard
-                key={post.id}
-                id={post.id}
-                title={post.title}
-                description={post.description}
-                image={post.image}
-                category={post.category}
-              />
-            ))}
-          </div>
+          {posts.length > 0 ? (
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              {posts.map((post) => (
+                <BlogCard
+                  key={post.id}
+                  id={post.id}
+                  title={post.title}
+                  description={post.description}
+                  image={post.image}
+                  category={post.category}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">
+              <p className="text-base font-medium text-gray-500 dark:text-gray-400">
+                No data available at the moment
+              </p>
+            </div>
+          )}
         </section>
       </main>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import SearchBar, { LocalSearchMode } from "./searchbar";
@@ -10,104 +10,125 @@ import Tooglebutton from "../Tooglebutton/Tooglebutton";
 import { demoCaseStudies } from "./database";
 
 const UseCases: React.FC = () => {
-  const [allCaseStudies] = useState<CaseStudy[]>(demoCaseStudies);
-  const [filteredCaseStudies, setFilteredCaseStudies] =
-    useState<CaseStudy[]>(demoCaseStudies);
-  const [selectedCaseStudy, setSelectedCaseStudy] =
-    useState<CaseStudy | null>(null);
-  const [darkMode, setDarkMode] = useState(false);
+	const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(
+		null,
+	);
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme === "dark") {
-      setDarkMode(true);
-      document.documentElement.classList.add("dark");
-    }
-  }, []);
+	const [darkMode, setDarkMode] = useState(false);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [searchMode, setSearchMode] = useState<LocalSearchMode>("title");
+	const [selectedCategory, setSelectedCategory] = useState<CATEGORY>(
+		"All" as CATEGORY,
+	);
 
-  const handleToggle = (value: boolean) => {
-    setDarkMode(value);
-    localStorage.setItem("theme", value ? "dark" : "light");
-  };
+	useEffect(() => {
+		const storedTheme = localStorage.getItem("theme");
 
-  const handleSearch = (
-    term: string,
-    mode: LocalSearchMode,
-    cat: CATEGORY
-  ) => {
-    const keyword = term.trim().toLowerCase();
+		if (storedTheme === "dark") {
+			setDarkMode(true);
+			document.documentElement.classList.add("dark");
+		}
+	}, []);
 
-    if (!keyword) {
-      setFilteredCaseStudies(allCaseStudies);
-      setSelectedCaseStudy(null);
-      return;
-    }
+	useEffect(() => {
+		document.documentElement.classList.toggle("dark", darkMode);
+	}, [darkMode]);
 
-    const filtered = allCaseStudies.filter((study) => {
-      if (mode === "title") {
-        return study.name?.toLowerCase().includes(keyword);
-      }
+	const handleToggle = useCallback((value: boolean) => {
+		setDarkMode(value);
+		localStorage.setItem("theme", value ? "dark" : "light");
+	}, []);
 
-      if (mode === "tag") {
-        return study.tags?.some((tag) => tag.toLowerCase().includes(keyword));
-      }
+	const filteredCaseStudies = useMemo(() => {
+		const keyword = searchTerm.trim().toLowerCase();
 
-      if (mode === "content") {
-        return study.description?.toLowerCase().includes(keyword);
-      }
+		if (!keyword) {
+			return demoCaseStudies;
+		}
 
-      return true;
-    });
+		return demoCaseStudies.filter((study) => {
+			if (searchMode === "title") {
+				return study.name?.toLowerCase().includes(keyword);
+			}
 
-    setFilteredCaseStudies(filtered);
-    setSelectedCaseStudy(null);
-  };
+			if (searchMode === "tag") {
+				return study.tags?.some((tag) => tag.toLowerCase().includes(keyword));
+			}
 
-  return (
-    <div className="flex min-h-screen flex-col bg-[#f7f9fb] text-black transition-all duration-300 dark:bg-gray-900 dark:text-white">
-      <Header />
+			if (searchMode === "content") {
+				return study.description?.toLowerCase().includes(keyword);
+			}
 
-      <main className="flex-grow">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
-          <section className="mb-8 rounded-[28px] border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:px-8">
-            <div className="mb-4 inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
-              Open Data Use Cases
-            </div>
+			return true;
+		});
+	}, [searchTerm, searchMode]);
 
-            <div className="max-w-3xl">
-              <h1 className="mb-3 text-4xl font-bold tracking-tight sm:text-5xl">
-                Use Cases
-              </h1>
-            </div>
-          </section>
+	const handleSearch = useCallback(
+		(term: string, mode: LocalSearchMode, cat: CATEGORY) => {
+			setSearchTerm(term);
+			setSearchMode(mode);
+			setSelectedCategory(cat);
+			setSelectedCaseStudy(null);
+		},
+		[],
+	);
 
-          {!selectedCaseStudy && <SearchBar onSearch={handleSearch} />}
+	const handleSelectCaseStudy = useCallback((caseStudy: CaseStudy) => {
+		setSelectedCaseStudy(caseStudy);
+	}, []);
 
-          <PreviewComponent
-            caseStudies={filteredCaseStudies}
-            trendingCaseStudies={filteredCaseStudies}
-            selectedCaseStudy={selectedCaseStudy}
-            onSelectCaseStudy={setSelectedCaseStudy}
-            onBack={() => setSelectedCaseStudy(null)}
-          />
-        </div>
-      </main>
+	const handleBack = useCallback(() => {
+		setSelectedCaseStudy(null);
+	}, []);
 
-      <div className="fixed bottom-4 right-4 z-50">
-        <Tooglebutton onValueChange={handleToggle} />
-      </div>
+	const hasCaseStudies = filteredCaseStudies.length > 0;
 
-      <Footer />
-    </div>
-  );
+	return (
+		<div className="flex min-h-screen flex-col bg-[#f7f9fb] text-black transition-colors duration-200 dark:bg-gray-900 dark:text-white">
+			<Header />
+
+			<main className="flex-grow">
+				<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
+					<section className="mb-8 rounded-[28px] border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:px-8">
+						<div className="mb-4 inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
+							Open Data Use Cases
+						</div>
+
+						<div className="max-w-3xl">
+							<h1 className="mb-3 text-4xl font-bold tracking-tight sm:text-5xl">
+								Use Cases
+							</h1>
+						</div>
+					</section>
+
+					{!selectedCaseStudy && <SearchBar onSearch={handleSearch} />}
+
+					{hasCaseStudies || selectedCaseStudy ? (
+						<PreviewComponent
+							caseStudies={filteredCaseStudies}
+							trendingCaseStudies={filteredCaseStudies}
+							selectedCaseStudy={selectedCaseStudy}
+							onSelectCaseStudy={handleSelectCaseStudy}
+							onBack={handleBack}
+						/>
+					) : (
+						<div className="mt-8 flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800">
+							<p className="text-base font-medium text-gray-500 dark:text-gray-400">
+								No data available at the moment
+							</p>
+						</div>
+					)}
+				</div>
+			</main>
+
+			<div className="fixed bottom-4 right-4 z-50">
+				<Tooglebutton onValueChange={handleToggle} />
+			</div>
+
+			<Footer />
+		</div>
+	);
 };
 
 export default UseCases;
