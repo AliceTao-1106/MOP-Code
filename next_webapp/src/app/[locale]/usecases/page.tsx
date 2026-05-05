@@ -5,9 +5,10 @@ import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import SearchBar, { LocalSearchMode } from "./searchbar";
 import PreviewComponent from "./preview";
-import { CATEGORY, CaseStudy } from "../../types";
+import { CATEGORY } from "../../types";
 import Tooglebutton from "../Tooglebutton/Tooglebutton";
-import { demoCaseStudies } from "./database";
+
+const PAGE_SIZE = 9;
 
 const UseCases: React.FC = () => {
 	const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(

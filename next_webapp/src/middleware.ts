@@ -15,15 +15,8 @@ const intlMiddleware = createMiddleware({
  * Page paths that require a valid JWT.
  * Matched against the path with any locale prefix stripped.
  */
-// <<<<<<< HEAD
-// //const PROTECTED_PATHS = ["/dashboard", "/admin", "/upload", "/statistics","/api/profile"];
-// //commented just for front end testing
 
-// =======
-// const PROTECTED_PATHS = ["/dashboard", "/admin", "/upload", "/statistics","/api/profile", "/api/categories"];
-const PROTECTED_PATHS = ["/dashboard", "/admin", "/upload", "/statistics", "/api/profile", "/api/categories"];
-
-// >>>>>>> backend_work
+const PROTECTED_PATHS = ["/dashboard", "/admin", "/upload", "/statistics", "/api/profile", "/api/categories",  "/api/blogs"];
 /**
  * Paths that are always publicly accessible and skip every auth check.
  * Matched against the bare path (locale prefix stripped).
@@ -208,6 +201,10 @@ export const config = {
     // Protected API routes — category
     "/api/categories",          
     "/api/categories/:path*",
+
+    // Protected API routes — blogs
+    "/api/blogs",          
+    "/api/blogs/:path*",
 
     // Public auth API routes (handled by isPublicPath — pass straight through)
     "/api/auth/:path*",

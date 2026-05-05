@@ -31,7 +31,7 @@ interface GalleryImage {
   src: string;
   titleKey: string;
   caption: string;
-  category: Exclude<Category, "All">;
+  category: ImageCategory;
   glowColor: string;
 }
 
@@ -230,7 +230,6 @@ const IMAGES: GalleryImage[] = [
 
 export default function GalleryPage() {
   const t = useTranslations("common");
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
   const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
 
   const closeLightbox = useCallback(() => {
@@ -382,7 +381,7 @@ export default function GalleryPage() {
 
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-10">
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-6">
-            {t("showing_images", { count: filtered.length })}
+            {t("showing_images", { count: IMAGES.length })}
           </p>
 
           {filtered.length > 0 ? (
