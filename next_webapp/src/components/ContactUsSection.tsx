@@ -179,7 +179,7 @@ export default function ContactUsSection() {
                     Email
                   </h4>
                   <p className="text-gray-600 dark:text-gray-300">
-                    email@example.com
+                    emailaccount@example.com
                   </p>
                 </div>
               </div>
