@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter as useI18nRouter, usePathname as useI18nPathname } from "@/i18n-navigation";
 import LanguageDropdown from "./LanguageDropdown";
@@ -27,7 +27,21 @@ const Header = () => {
 	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 	const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
 	const [isLangOpen, setIsLangOpen] = useState(false);
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const { theme, toggleTheme } = useTheme();
+
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		setIsLoggedIn(!!token);
+	}, []);
+
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		localStorage.removeItem("userId");
+		setIsLoggedIn(false);
+		i18nRouter.push("/");
+	};
 
 	const selectLanguage = (locale: string) => {
 		i18nRouter.push(i18nPathname, { locale });
@@ -173,12 +187,21 @@ const Header = () => {
 							<LanguageDropdown />
 						</div>
 						<div className="hidden lg:flex">
-							<Link
-								href="/login"
-								className="inline-flex h-10 min-w-[96px] items-center justify-center rounded-lg border border-green-600 bg-white px-4 text-sm font-medium text-green-600 transition-all duration-200 transform hover:scale-105 hover:bg-green-50 hover:text-green-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:border-green-400 dark:bg-black dark:text-green-300 dark:hover:bg-gray-800"
-							>
-								{t("Log In")}
-							</Link>
+							{isLoggedIn ? (
+								<button
+									onClick={handleLogout}
+									className="inline-flex h-10 min-w-[96px] items-center justify-center rounded-lg border border-green-600 bg-white px-4 text-sm font-medium text-green-600 transition-all duration-200 transform hover:scale-105 hover:bg-green-50 hover:text-green-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:border-green-400 dark:bg-black dark:text-green-300 dark:hover:bg-gray-800"
+								>
+									Log Out
+								</button>
+							) : (
+								<Link
+									href="/login"
+									className="inline-flex h-10 min-w-[96px] items-center justify-center rounded-lg border border-green-600 bg-white px-4 text-sm font-medium text-green-600 transition-all duration-200 transform hover:scale-105 hover:bg-green-50 hover:text-green-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:border-green-400 dark:bg-black dark:text-green-300 dark:hover:bg-gray-800"
+								>
+									{t("Log In")}
+								</Link>
+							)}
 						</div>
 						<div className="flex lg:hidden">
 		                  <button
@@ -281,13 +304,22 @@ const Header = () => {
 									</div>
 								)}
 							</div>
-							{/* Log In button */}
-							<Link
-								href="/login"
-								className="block text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-base font-medium"
-							>
-								{t("Log In")}
-							</Link>
+							{/* Log In / Log Out button */}
+							{isLoggedIn ? (
+								<button
+									onClick={handleLogout}
+									className="block w-full text-left text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-base font-medium"
+								>
+									Log Out
+								</button>
+							) : (
+								<Link
+									href="/login"
+									className="block text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-base font-medium"
+								>
+									{t("Log In")}
+								</Link>
+							)}
 						</nav>
 					</div>
 				)}
