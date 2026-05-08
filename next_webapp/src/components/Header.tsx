@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
 	Link,
@@ -48,31 +48,21 @@ const Header = () => {
 	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 	const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
 	const [isLangOpen, setIsLangOpen] = useState(false);
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const { theme, toggleTheme } = useTheme();
 
-	// Ref for desktop Explore dropdown – used for click-outside detection
-	const exploreRef = useRef<HTMLDivElement>(null);
-
-	// Close Explore dropdown on outside click or Escape
 	useEffect(() => {
-		const onClickOutside = (e: MouseEvent) => {
-			if (exploreRef.current && !exploreRef.current.contains(e.target as Node)) {
-				setOpenDropdown(null);
-			}
-		};
-		const onEscape = (e: KeyboardEvent) => {
-			if (e.key === "Escape") {
-				setOpenDropdown(null);
-				setIsLangOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", onClickOutside);
-		document.addEventListener("keydown", onEscape);
-		return () => {
-			document.removeEventListener("mousedown", onClickOutside);
-			document.removeEventListener("keydown", onEscape);
-		};
+		const token = localStorage.getItem("token");
+		setIsLoggedIn(!!token);
 	}, []);
+
+	const handleLogout = () => {
+		localStorage.removeItem("token");
+		localStorage.removeItem("user");
+		localStorage.removeItem("userId");
+		setIsLoggedIn(false);
+		i18nRouter.push("/");
+	};
 
 	const selectLanguage = (locale: string) => {
 		i18nRouter.push(i18nPathname, { locale });
@@ -236,12 +226,21 @@ const Header = () => {
 
 						{/* Log In (desktop) */}
 						<div className="hidden lg:flex">
-							<Link
-								href="/login"
-								className="inline-flex h-9 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-600 px-5 text-sm font-medium text-white shadow-md shadow-green-500/20 transition-all duration-200 hover:from-green-600 hover:to-emerald-700 hover:shadow-lg hover:shadow-green-500/30 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
-							>
-								{t("Log In")}
-							</Link>
+							{isLoggedIn ? (
+								<button
+									onClick={handleLogout}
+									className="inline-flex h-10 min-w-[96px] items-center justify-center rounded-lg border border-green-600 bg-white px-4 text-sm font-medium text-green-600 transition-all duration-200 transform hover:scale-105 hover:bg-green-50 hover:text-green-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:border-green-400 dark:bg-black dark:text-green-300 dark:hover:bg-gray-800"
+								>
+									Log Out
+								</button>
+							) : (
+								<Link
+									href="/login"
+									className="inline-flex h-10 min-w-[96px] items-center justify-center rounded-lg border border-green-600 bg-white px-4 text-sm font-medium text-green-600 transition-all duration-200 transform hover:scale-105 hover:bg-green-50 hover:text-green-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:border-green-400 dark:bg-black dark:text-green-300 dark:hover:bg-gray-800"
+								>
+									{t("Log In")}
+								</Link>
+							)}
 						</div>
 
 						{/* Hamburger (mobile) */}
@@ -359,15 +358,22 @@ const Header = () => {
 									</div>
 								)}
 							</div>
-
-							{/* Log In (mobile) */}
-							<Link
-								href="/login"
-								onClick={closeMenu}
-								className="flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm hover:from-green-600 hover:to-emerald-700 transition-all duration-200 mt-1"
-							>
-								{t("Log In")}
-							</Link>
+							{/* Log In / Log Out button */}
+							{isLoggedIn ? (
+								<button
+									onClick={handleLogout}
+									className="block w-full text-left text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-base font-medium"
+								>
+									Log Out
+								</button>
+							) : (
+								<Link
+									href="/login"
+									className="block text-green-600 hover:text-green-900 px-3 py-2 rounded-md text-base font-medium"
+								>
+									{t("Log In")}
+								</Link>
+							)}
 						</nav>
 					</div>
 				)}
