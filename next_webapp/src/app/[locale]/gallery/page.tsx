@@ -437,7 +437,7 @@ export default function GalleryPage() {
           ) : (
             <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">
               <p className="text-base font-medium text-gray-500 dark:text-gray-400">
-                No data available at the moment
+                No images available at the moment.
               </p>
             </div>
           )}
