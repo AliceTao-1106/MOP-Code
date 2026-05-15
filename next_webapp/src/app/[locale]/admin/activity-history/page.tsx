@@ -73,7 +73,9 @@ const activityData: ActivityEntry[] = [
 
 export default function ActivityHistoryPage() {
   return (
-    <div>
+    // ml offsets the absolute-positioned sidebar on mobile/tablet (120px open → 120-32=88px extra needed;
+    // 180px on md → 180-32=148px). lg+ uses the flex-flow desktop sidebar so no offset needed.
+    <div className="ml-[88px] md:ml-[148px] lg:ml-0">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-[40px] font-semibold leading-[48px] text-[#2DBE6C]">
@@ -90,7 +92,7 @@ export default function ActivityHistoryPage() {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-black/30">
-                <th className="px-3 py-4 text-left text-[14px] font-semibold text-black">
+                <th className="min-w-[250px] px-3 py-4 text-left text-[14px] font-semibold text-black">
                   Activity Performed
                 </th>
                 <th className="px-3 py-4 text-left text-[14px] font-semibold text-black">
@@ -105,7 +107,7 @@ export default function ActivityHistoryPage() {
             <tbody>
               {activityData.map((entry) => (
                 <tr key={entry.id} className="border-b border-black/10">
-                  <td className="px-3 py-4 text-[14px] font-medium text-black">
+                  <td className="min-w-[250px] px-3 py-4 text-[14px] font-medium text-black">
                     {entry.activity}
                   </td>
                   <td className="px-3 py-4 text-[14px] text-[#687280]">
