@@ -65,7 +65,11 @@ export default function BlogListingPage() {
           </div>
 
           {/* Responsive card grid: 1 → 2 → 3 columns */}
-          {blogs.length > 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-green-200 border-t-green-600" />
+            </div>
+          ) : blogs.length > 0 ? (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {blogs.map((blog) => (
                 <BlogCard
