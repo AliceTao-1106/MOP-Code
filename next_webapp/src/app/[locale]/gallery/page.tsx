@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Pagination from "@/components/Pagination";
 
 type Category =
   | "Landmarks"
@@ -228,14 +228,6 @@ export default function GalleryPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const goToPreviousPage = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const goToNextPage = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
   const closeLightbox = useCallback(() => {
     setLightboxIndex(null);
   }, []);
@@ -410,29 +402,11 @@ export default function GalleryPage() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <div className="mt-12 flex items-center justify-center gap-3">
-                  <button
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 1}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                    Page {currentPage} of {totalPages}
-                  </span>
-
-                  <button
-                    onClick={goToNextPage}
-                    disabled={currentPage === totalPages}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              )}
+              <Pagination
+                page={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </>
           ) : (
             <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">

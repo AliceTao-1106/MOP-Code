@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SearchFilter from "../../../components/SearchFilter";
 import SearchResults from "../../../components/SearchResults";
+import Pagination from "@/components/Pagination";
 
 interface SearchResult {
     id: number;
@@ -44,42 +45,40 @@ interface SearchData {
 
 export default function SearchPage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [searchResults, setSearchResults] = useState<SearchData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
-    const performSearch = async () => {
-        setLoading(true);
-        setError(false);
-        try {
-            const params = new URLSearchParams(searchParams.toString());
-            const response = await fetch(`/api/search?${params.toString()}`);
-            const data = await response.json();
-            if (data.success) {
-                setSearchResults(data.data);
-            } else {
-                setError(true);
-            }
-        } catch {
-            setError(true);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        performSearch();
+        const doSearch = async () => {
+            setLoading(true);
+            setError(false);
+            try {
+                const params = new URLSearchParams(searchParams.toString());
+                const response = await fetch(`/api/search?${params.toString()}`);
+                const data = await response.json();
+                if (data.success) setSearchResults(data.data);
+                else setError(true);
+            } catch {
+                setError(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+        doSearch();
     }, [searchParams]);
 
     const handleFilterChange = () => {
-        performSearch();
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.delete("page");
+        router.push(`?${newParams.toString()}`, { scroll: false });
     };
 
     const goToPage = (newPage: number) => {
         const newParams = new URLSearchParams(searchParams.toString());
         newParams.set("page", String(newPage));
-        window.history.pushState({}, "", `?${newParams.toString()}`);
-        performSearch();
+        router.push(`?${newParams.toString()}`, { scroll: false });
     };
 
     return (
@@ -136,29 +135,12 @@ export default function SearchPage() {
                                     />
                                 )}
 
-                                {searchResults.pagination.totalPages > 1 && (
-                                    <div className="mt-8 flex items-center justify-center gap-3">
-                                        {searchResults.pagination.hasPrev && (
-                                            <button
-                                                onClick={() => goToPage(searchResults.pagination.page - 1)}
-                                                className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                                            >
-                                                Previous
-                                            </button>
-                                        )}
-                                        <span className="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white">
-                                            {searchResults.pagination.page} / {searchResults.pagination.totalPages}
-                                        </span>
-                                        {searchResults.pagination.hasNext && (
-                                            <button
-                                                onClick={() => goToPage(searchResults.pagination.page + 1)}
-                                                className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-                                            >
-                                                Next
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
+                                <Pagination
+                                    page={searchResults.pagination.page}
+                                    totalPages={searchResults.pagination.totalPages}
+                                    onPageChange={goToPage}
+                                    className="mt-8"
+                                />
                             </div>
                         ) : (
                             <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">

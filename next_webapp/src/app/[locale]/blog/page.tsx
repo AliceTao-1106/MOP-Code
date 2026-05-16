@@ -98,7 +98,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import Pagination from "@/components/Pagination";
+import { Search } from "lucide-react";
 
 const PAGE_SIZE = 9;
 type SearchMode = "title" | "content";
@@ -269,19 +270,6 @@ export default function BlogListingPage() {
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-green-200 border-t-green-600" />
             </div>
           ) : blogs.length > 0 ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {blogs.map((blog) => (
-                <BlogCard
-                  key={blog.id}
-                  id={String(blog.id)}
-                  title={blog.title ?? ""}
-                  description={blog.description ?? ""}
-                  image={blog.cover_img ?? ""}
-                  category={blog.published_date ?? ""}
-                />
-              ))}
-            </div>
-          ) : blogs.length > 0 ? (
             <>
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {blogs.map((blog) => (
@@ -295,32 +283,7 @@ export default function BlogListingPage() {
                   />
                 ))}
               </div>
-
-              {totalPages > 1 && (
-                <div className="mt-12 flex items-center justify-center gap-3">
-                  <button
-                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={page === 1}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
-                    Page {page} of {totalPages}
-                  </span>
-
-                  <button
-                    onClick={() =>
-                      setPage((prev) => Math.min(prev + 1, totalPages))
-                    }
-                    disabled={page === totalPages}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              )}
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </>
           ) : (
             <div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">

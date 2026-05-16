@@ -10,6 +10,10 @@ export async function GET(request) {
     const category = searchParams.get('category') ?? null;
     const tag = searchParams.get('tag') ?? null;
 
+    const rawPage = parseInt(searchParams.get('page') ?? '1', 10);
+    const rawPageSize = parseInt(searchParams.get('pageSize') ?? '10', 10);
+    const pageSize = Math.min(isNaN(rawPageSize) || rawPageSize < 1 ? 10 : rawPageSize, 100);
+
     let categoryId = null;
     if (category !== null) {
       categoryId = parseInt(category, 10);
@@ -64,7 +68,14 @@ export async function GET(request) {
 
       if (tagLookupError || !tagRow) {
         return NextResponse.json(
-          { success: true, data: { results: [], total: 0, filters: { q, title, category, tag } } },
+          {
+            success: true,
+            data: {
+              results: [],
+              pagination: { page: 1, pageSize, total: 0, totalPages: 1, hasNext: false, hasPrev: false },
+              filters: { q, title, category, tag },
+            },
+          },
           { status: 200 },
         );
       }
@@ -80,8 +91,27 @@ export async function GET(request) {
       results = results.filter(({ id }) => taggedIds.has(id));
     }
 
+    const total = results.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const page = Math.min(isNaN(rawPage) || rawPage < 1 ? 1 : rawPage, totalPages);
+    const paginatedResults = results.slice((page - 1) * pageSize, page * pageSize);
+
     return NextResponse.json(
-      { success: true, data: { results, total: results.length, filters: { q, title, category, tag } } },
+      {
+        success: true,
+        data: {
+          results: paginatedResults,
+          pagination: {
+            page,
+            pageSize,
+            total,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1,
+          },
+          filters: { q, title, category, tag },
+        },
+      },
       { status: 200 },
     );
   } catch (error) {

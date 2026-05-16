@@ -6,6 +6,7 @@ import { Plus, Search, Filter } from "lucide-react";
 import BlogTable from "./components/BlogsTable";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import AdminToast from "@/components/admin/AdminToast";
+import Pagination from "@/components/Pagination";
 
 function authHeaders() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -165,27 +166,14 @@ export default function BlogsPage({ params }: { params: Promise<{ locale: string
         <>
           <BlogTable data={blogs} locale={locale} onDelete={handleDelete} />
 
-          {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page === 1}
-                className="rounded-lg border border-[#CFEFD9] bg-white px-4 py-2 text-sm font-medium text-[#1F8F50] hover:bg-[#F0FFF6] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-[#687280]">
-                Page {page} of {totalPages} &nbsp;·&nbsp; {total} blogs
-              </span>
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page === totalPages}
-                className="rounded-lg border border-[#CFEFD9] bg-white px-4 py-2 text-sm font-medium text-[#1F8F50] hover:bg-[#F0FFF6] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            total={total}
+            pageSize={PAGE_SIZE}
+            variant="admin"
+          />
         </>
       )}
             <ConfirmModal

@@ -159,8 +159,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ArrowRight, FileText } from "lucide-react";
 import { CaseStudy } from "../../types";
+import Pagination from "@/components/Pagination";
 
 const UseCaseCard: React.FC<{ study: CaseStudy }> = ({ study }) => {
   const params = useParams<{ locale: string }>();
@@ -280,29 +281,7 @@ const PreviewComponent: React.FC<Props> = ({
         ))}
       </section>
 
-    {totalPages > 1 && (
-  <div className="mt-12 flex items-center justify-center gap-3">
-    <button
-      onClick={() => onPageChange(page - 1)}
-      disabled={page === 1}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-    >
-      <ChevronLeft size={18} />
-    </button>
-
-    <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-300">
-      Page {page} of {totalPages}
-    </span>
-
-    <button
-      onClick={() => onPageChange(page + 1)}
-      disabled={page === totalPages}
-      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-    >
-      <ChevronRight size={18} />
-    </button>
-  </div>
-)}
+    <Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
     </div>
   );
 };

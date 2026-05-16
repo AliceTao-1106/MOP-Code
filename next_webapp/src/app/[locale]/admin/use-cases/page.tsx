@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Plus, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Filter } from "lucide-react";
 import UseCaseTable from "./components/UseCaseTable";
 import ConfirmModal from "@/components/admin/ConfirmModal";
 import AdminToast from "@/components/admin/AdminToast";
+import Pagination from "@/components/Pagination";
 
 function getAuthHeaders() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -130,9 +131,6 @@ const [toast, setToast] = useState<{ message: string; type: "success" | "error" 
     category_name: categoryMap[u.category_id] ?? "—",
   }));
 
-  const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
-  const rangeEnd = Math.min(page * PAGE_SIZE, total);
-
   return (
     <div>
       {/* Header */}
@@ -193,35 +191,14 @@ const [toast, setToast] = useState<{ message: string; type: "success" | "error" 
         onDelete={handleDelete}
       />
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-[#687280]">
-            Showing {rangeStart}–{rangeEnd} of {total}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page === 1}
-              className="inline-flex items-center gap-1 rounded-lg border border-[#CFEFD9] bg-white px-3 py-2 text-sm text-[#1F8F50] transition hover:bg-[#DFF7E8] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <ChevronLeft size={16} />
-              Previous
-            </button>
-            <span className="text-sm text-[#687280]">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page === totalPages}
-              className="inline-flex items-center gap-1 rounded-lg border border-[#CFEFD9] bg-white px-3 py-2 text-sm text-[#1F8F50] transition hover:bg-[#DFF7E8] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Next
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        total={total}
+        pageSize={PAGE_SIZE}
+        variant="admin"
+      />
             <ConfirmModal
         open={!!deleteTarget}
         title="Delete Use Case"
