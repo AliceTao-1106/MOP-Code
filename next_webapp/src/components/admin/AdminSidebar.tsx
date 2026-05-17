@@ -10,6 +10,7 @@ import {
   Briefcase,
   Image as ImageIcon,
   FileText,
+  History,
 } from "lucide-react";
 
 const menuItems = [

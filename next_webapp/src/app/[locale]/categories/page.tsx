@@ -2,116 +2,99 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  color: string;
-  icon?: string;
-  description?: string;
+	id: number;
+	name: string;
+	slug: string;
+	color: string;
+	icon?: string;
+	description?: string;
 }
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const locale = useLocale();
+	const [categories, setCategories] = useState<Category[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(false);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+	useEffect(() => {
+		fetchCategories();
+	}, []);
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
+	const fetchCategories = async () => {
+		try {
+			setError(false);
+			const response = await fetch("/api/categories");
+			const data = await response.json();
+			if (data.success) {
+				setCategories(data.data);
+			} else {
+				setError(true);
+			}
+		} catch {
+			setError(true);
+		} finally {
+			setLoading(false);
+		}
+	};
 
-      const response = await fetch("/api/categories");
-      const data = await response.json();
+	return (
+		<div className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-[#1C1C1C] dark:text-white">
+			<Header />
 
-      if (data.success) {
-        setCategories(data.data || []);
-      } else {
-        setCategories([]);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setCategories([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+			<main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+				<div className="mb-10">
+					<h1 className="mb-2 text-4xl font-bold">All Categories</h1>
+					<p className="text-gray-500 dark:text-gray-400">
+						Browse use cases by category
+					</p>
+				</div>
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-white px-4 py-10 dark:bg-[#1C1C1C] sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-7xl">
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Loading categories...
-          </p>
-        </div>
-      </main>
-    );
-  }
+				{loading ? (
+					<div className="flex items-center justify-center py-20">
+						<div className="h-10 w-10 animate-spin rounded-full border-4 border-green-200 border-t-green-600" />
+					</div>
+				) : error ? (
+					<div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-red-200 bg-red-50 px-6 py-12 text-center dark:border-red-900 dark:bg-red-950/20">
+						<p className="text-base font-medium text-red-500 dark:text-red-400">
+							Something went wrong. Please try again later.
+						</p>
+					</div>
+				) : categories.length === 0 ? (
+					<div className="flex min-h-[250px] items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-6 py-12 text-center dark:border-gray-700 dark:bg-[#242424]">
+						<p className="text-base font-medium text-gray-500 dark:text-gray-400">
+							No categories available at the moment.
+						</p>
+					</div>
+				) : (
+					<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+						{categories.map((category) => (
+							<Link key={category.id} href={`/categories/${category.slug}`}>
+								<div className="cursor-pointer rounded-2xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800">
+									<div className="mb-3 flex items-center">
+										<span
+											className="mr-3 inline-block h-4 w-4 flex-shrink-0 rounded-full"
+											style={{ backgroundColor: category.color }}
+										/>
+										<h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+											{category.name}
+										</h2>
+									</div>
+									{category.description && (
+										<p className="text-sm text-gray-600 dark:text-gray-300">
+											{category.description}
+										</p>
+									)}
+								</div>
+							</Link>
+						))}
+					</div>
+				)}
+			</main>
 
-  return (
-    <main className="min-h-screen bg-white px-4 py-10 dark:bg-[#1C1C1C] sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-      <div className="mx-auto w-full max-w-7xl">
-        <div className="mb-8 text-center sm:mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl lg:text-5xl">
-            All Categories
-          </h1>
-
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400 sm:text-base">
-            Browse available categories and explore related content.
-          </p>
-        </div>
-
-        {categories.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/${locale}/categories/${category.slug}`}
-                className="block h-full"
-              >
-                <article className="h-full rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:p-6">
-                  <div className="mb-3 flex items-start gap-3">
-                    <span
-                      className="mt-1 inline-block h-4 w-4 shrink-0 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
-
-                    <h2 className="break-words text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
-                      {category.name}
-                    </h2>
-                  </div>
-
-                  {category.description ? (
-                    <p className="text-sm leading-6 text-gray-600 dark:text-gray-400">
-                      {category.description}
-                    </p>
-                  ) : (
-                    <p className="text-sm leading-6 text-gray-400 dark:text-gray-500">
-                      No description available.
-                    </p>
-                  )}
-                </article>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-gray-300 px-4 py-16 text-center dark:border-gray-700">
-            <p className="text-base font-medium text-gray-700 dark:text-gray-200">
-              No categories found.
-            </p>
-
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Categories will appear here once they are added.
-            </p>
-          </div>
-        )}
-      </div>
-    </main>
-  );
+			<Footer />
+		</div>
+	);
 }

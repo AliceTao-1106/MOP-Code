@@ -8,7 +8,6 @@ export default function EditUseCase({ params }: { params: { id: string } }) {
   const router = useRouter();
   const locale = useLocale();
 
-  // Temporary existing data until backend integration is ready
   const existingData = {
     serialNumber: "Existing Serial Number",
     title: "Existing Title",

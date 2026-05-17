@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { Save, ImagePlus, FileText } from "lucide-react";
 
 type UseCaseFormData = {
@@ -15,6 +15,10 @@ type UseCaseFormData = {
 type UseCaseFormProps = {
   initialData?: UseCaseFormData;
   onSubmit: (data: UseCaseFormData) => void;
+};
+
+type FormErrors = {
+  document?: string;
 };
 
 export default function UseCaseForm({
@@ -36,6 +40,8 @@ export default function UseCaseForm({
     typeof form.image === "string" ? form.image : ""
   );
 
+  const [errors, setErrors] = useState<FormErrors>({});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,9 +59,17 @@ export default function UseCaseForm({
     const allowedTypes = ["text/html", "application/pdf"];
 
     if (!allowedTypes.includes(file.type)) {
-      alert("Only HTML and PDF files are allowed");
+      setErrors((prev) => ({
+        ...prev,
+        document: "Only HTML and PDF files are allowed",
+      }));
       return;
     }
+
+    setErrors((prev) => ({
+      ...prev,
+      document: undefined,
+    }));
 
     setForm((prev) => ({
       ...prev,
@@ -91,7 +105,7 @@ export default function UseCaseForm({
             setForm((prev) => ({ ...prev, serialNumber: e.target.value }))
           }
           placeholder="Enter serial number"
-          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
+          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition-colors focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
         />
       </div>
 
@@ -108,7 +122,7 @@ export default function UseCaseForm({
             setForm((prev) => ({ ...prev, title: e.target.value }))
           }
           placeholder="Enter title"
-          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
+          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition-colors focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
         />
       </div>
 
@@ -123,7 +137,7 @@ export default function UseCaseForm({
           onChange={(e) =>
             setForm((prev) => ({ ...prev, category: e.target.value }))
           }
-          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
+          className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition-colors focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
         >
           <option value="">Select category</option>
           <option value="Category 1">Category 1</option>
@@ -145,7 +159,7 @@ export default function UseCaseForm({
             setForm((prev) => ({ ...prev, description: e.target.value }))
           }
           placeholder="Enter description"
-          className="w-full resize-none rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
+          className="w-full resize-none rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 text-sm outline-none transition-colors focus:border-[#2DBE6C] focus:bg-white focus:ring-2 focus:ring-[#2DBE6C]/20"
         />
       </div>
 
@@ -159,7 +173,7 @@ export default function UseCaseForm({
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className="cursor-pointer rounded-2xl border-2 border-dashed border-[#CFEFD9] bg-[#F8FFFA] px-4 py-8 text-center transition hover:bg-[#F0FFF6] sm:p-8"
+          className="cursor-pointer rounded-2xl border-2 border-dashed border-[#CFEFD9] bg-[#F8FFFA] px-4 py-8 text-center transition-colors hover:bg-[#F0FFF6] sm:p-8"
         >
           {!preview ? (
             <>
@@ -189,7 +203,11 @@ export default function UseCaseForm({
           ref={fileInputRef}
           className="hidden"
           accept="image/*"
-          onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              handleFile(e.target.files[0]);
+            }
+          }}
         />
       </div>
 
@@ -209,7 +227,7 @@ export default function UseCaseForm({
             }
           }}
           onClick={() => documentInputRef.current?.click()}
-          className="cursor-pointer rounded-2xl border-2 border-dashed border-[#CFEFD9] bg-[#F8FFFA] px-4 py-8 text-center transition hover:bg-[#F0FFF6] sm:p-8"
+          className="cursor-pointer rounded-2xl border-2 border-dashed border-[#CFEFD9] bg-[#F8FFFA] px-4 py-8 text-center transition-colors hover:bg-[#F0FFF6] sm:p-8"
         >
           {!form.document ? (
             <>
@@ -232,14 +250,20 @@ export default function UseCaseForm({
           )}
         </div>
 
+        {errors.document && (
+          <p className="mt-1 text-sm text-red-500">{errors.document}</p>
+        )}
+
         <input
           type="file"
           ref={documentInputRef}
           className="hidden"
           accept=".html,.pdf"
-          onChange={(e) =>
-            e.target.files && handleDocument(e.target.files[0])
-          }
+          onChange={(e) => {
+            if (e.target.files?.[0]) {
+              handleDocument(e.target.files[0]);
+            }
+          }}
         />
       </div>
 
@@ -247,7 +271,7 @@ export default function UseCaseForm({
       <div className="pt-2">
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2DBE6C] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#1F8F50] sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2DBE6C] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1F8F50] sm:w-auto"
         >
           <Save size={18} />
           Save Use Case

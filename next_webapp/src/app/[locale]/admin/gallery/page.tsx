@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Upload } from "lucide-react";
+import { Plus, X, Upload, Pencil, Trash2 } from "lucide-react";
 
 type GalleryImage = {
   id: number;
@@ -47,43 +47,23 @@ const initialImages: GalleryImage[] = [
     url: "/img/cityimg.png",
     uploadedAt: "28/03/2026",
   },
-  {
-    id: 7,
-    title: "Melbourne Arts Centre",
-    url: "/img/melbourne-city.jpg",
-    uploadedAt: "27/03/2026",
-  },
-  {
-    id: 8,
-    title: "Federation Square",
-    url: "/img/melbourne-city1.jpg",
-    uploadedAt: "26/03/2026",
-  },
 ];
 
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>(initialImages);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadTitle, setUploadTitle] = useState("");
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
 
-  const handleDelete = () => {
-    if (!selectedImage) return;
-
-    setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
-    setShowDeleteConfirm(false);
-    setSelectedImage(null);
-  };
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
 
-    setUploadFile(file);
     setUploadPreview(URL.createObjectURL(file));
   };
 
@@ -100,29 +80,41 @@ export default function GalleryPage() {
     setImages((prev) => [newImage, ...prev]);
     setUploadOpen(false);
     setUploadTitle("");
-    setUploadFile(null);
     setUploadPreview(null);
   };
 
   const closeUpload = () => {
     setUploadOpen(false);
     setUploadTitle("");
-    setUploadFile(null);
     setUploadPreview(null);
+  };
+
+  const handleDelete = () => {
+    if (!selectedImage) return;
+
+    setImages((prev) => prev.filter((img) => img.id !== selectedImage.id));
+    setDeleteConfirmOpen(false);
+    setSelectedImage(null);
   };
 
   return (
     <div className="w-full max-w-full overflow-hidden">
       {/* Page header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-semibold leading-tight text-[#2DBE6C] sm:text-4xl lg:text-[40px] lg:leading-[48px]">
-          Gallery
-        </h1>
+        <div>
+          <h1 className="text-3xl font-semibold leading-tight text-[#2DBE6C] sm:text-4xl lg:text-[40px] lg:leading-[48px]">
+            Gallery
+          </h1>
+
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#687280] sm:text-base">
+            Manage uploaded gallery photos.
+          </p>
+        </div>
 
         <button
           type="button"
           onClick={() => setUploadOpen(true)}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1F8F50] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#2DBE6C] sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#1F8F50] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#2DBE6C] sm:w-auto"
         >
           <Plus size={16} />
           Upload New Photo
@@ -130,37 +122,37 @@ export default function GalleryPage() {
       </div>
 
       {/* Photo grid */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {images.map((image) => (
-          <button
-            key={image.id}
-            type="button"
-            onClick={() => setSelectedImage(image)}
-            className="group relative overflow-hidden rounded-2xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1F8F50]"
-          >
-            <img
-              src={image.url}
-              alt={image.title}
-              className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-56 lg:h-64"
-            />
+      {images.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+          {images.map((image) => (
+            <button
+              key={image.id}
+              type="button"
+              onClick={() => setSelectedImage(image)}
+              className="group relative overflow-hidden rounded-2xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#1F8F50]"
+            >
+              <img
+                src={image.url}
+                alt={image.title}
+                className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-56 lg:h-64"
+              />
 
-            <div className="absolute inset-x-0 bottom-0 bg-black/45 px-3 py-2 text-left opacity-0 transition group-hover:opacity-100">
-              <p className="truncate text-sm font-medium text-white">
-                {image.title}
-              </p>
-            </div>
-          </button>
-        ))}
-
-        {images.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white px-4 py-20 text-center text-gray-400">
-            <p className="text-base font-medium">No photos yet</p>
-            <p className="mt-1 text-sm">
-              Click &ldquo;Upload New Photo&rdquo; to get started
-            </p>
-          </div>
-        )}
-      </div>
+              <div className="absolute inset-x-0 bottom-0 bg-black/45 px-3 py-2 text-left opacity-0 transition-opacity group-hover:opacity-100">
+                <p className="truncate text-sm font-medium text-white">
+                  {image.title}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex min-h-[240px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white px-4 py-20 text-center text-gray-400">
+          <p className="text-base font-medium">No data available at the moment</p>
+          <p className="mt-1 text-sm">
+            Click &ldquo;Upload New Photo&rdquo; to get started.
+          </p>
+        </div>
+      )}
 
       {/* Preview modal */}
       {selectedImage && (
@@ -170,9 +162,10 @@ export default function GalleryPage() {
               type="button"
               onClick={() => {
                 setSelectedImage(null);
-                setShowDeleteConfirm(false);
+                setDeleteConfirmOpen(false);
               }}
-              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[#1F8F50] text-white transition hover:bg-[#2DBE6C]"
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[#1F8F50] text-white transition-colors hover:bg-[#2DBE6C]"
+              aria-label="Close preview"
             >
               <X size={18} strokeWidth={3} />
             </button>
@@ -191,23 +184,33 @@ export default function GalleryPage() {
               Uploaded on {selectedImage.uploadedAt}
             </p>
 
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="w-full rounded-lg bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-red-600 sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
               >
+                <Pencil size={16} />
+                Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-500 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
+              >
+                <Trash2 size={16} />
                 Delete
               </button>
             </div>
 
-            {showDeleteConfirm && (
+            {deleteConfirmOpen && (
               <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 px-4">
                 <div className="relative w-full max-w-xs rounded-2xl bg-white px-6 py-5 shadow-xl">
                   <button
                     type="button"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="absolute right-3 top-3 text-gray-400 transition hover:text-gray-700"
+                    onClick={() => setDeleteConfirmOpen(false)}
+                    className="absolute right-3 top-3 text-gray-400 transition-colors hover:text-gray-700"
+                    aria-label="Close delete confirmation"
                   >
                     <X size={16} />
                   </button>
@@ -219,8 +222,8 @@ export default function GalleryPage() {
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                     <button
                       type="button"
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                      onClick={() => setDeleteConfirmOpen(false)}
+                      className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
                     >
                       Cancel
                     </button>
@@ -228,7 +231,7 @@ export default function GalleryPage() {
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+                      className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-600"
                     >
                       Yes, Delete
                     </button>
@@ -247,7 +250,8 @@ export default function GalleryPage() {
             <button
               type="button"
               onClick={closeUpload}
-              className="absolute right-4 top-4 text-gray-400 transition hover:text-gray-700"
+              className="absolute right-4 top-4 text-gray-400 transition-colors hover:text-gray-700"
+              aria-label="Close upload modal"
             >
               <X size={20} />
             </button>
@@ -256,7 +260,7 @@ export default function GalleryPage() {
               Upload New Photo
             </h2>
 
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#1F8F50]/40 bg-[#E8F5EE] px-4 py-8 text-center transition hover:border-[#1F8F50] hover:bg-[#D6EFE2] sm:py-10">
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#1F8F50]/40 bg-[#E8F5EE] px-4 py-8 text-center transition-colors hover:border-[#1F8F50] hover:bg-[#D6EFE2] sm:py-10">
               {uploadPreview ? (
                 <img
                   src={uploadPreview}
@@ -288,14 +292,14 @@ export default function GalleryPage() {
               placeholder="Photo title"
               value={uploadTitle}
               onChange={(e) => setUploadTitle(e.target.value)}
-              className="mt-4 w-full rounded-xl border-2 border-gray-300 bg-gray-100 px-4 py-3 text-base font-bold text-gray-800 outline-none transition placeholder:font-bold placeholder:text-gray-400 focus:border-[#1F8F50] focus:bg-white focus:ring-2 focus:ring-[#1F8F50]/20 sm:text-[17px]"
+              className="mt-4 w-full rounded-xl border-2 border-gray-300 bg-gray-100 px-4 py-3 text-base font-bold text-gray-800 outline-none transition-colors placeholder:font-bold placeholder:text-gray-400 focus:border-[#1F8F50] focus:bg-white focus:ring-2 focus:ring-[#1F8F50]/20 sm:text-[17px]"
             />
 
             <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={closeUpload}
-                className="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+                className="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
               >
                 Cancel
               </button>
@@ -304,9 +308,9 @@ export default function GalleryPage() {
                 type="button"
                 onClick={handleUpload}
                 disabled={!uploadTitle.trim() || !uploadPreview}
-                className="rounded-lg bg-[#1F8F50] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#2DBE6C] disabled:opacity-40"
+                className="rounded-lg bg-[#1F8F50] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2DBE6C] disabled:opacity-40"
               >
-                Upload
+                Upload Photo
               </button>
             </div>
           </div>
